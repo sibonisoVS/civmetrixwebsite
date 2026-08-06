@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CivMetrix — Know what you've earned before you claim it</title>
+<meta name="description" content="Site management for civil contractors. Measure work, cost it, and produce the certificate — so nothing built goes unclaimed.">
+<meta property="og:title" content="CivMetrix — Know what you've earned before you claim it">
+<meta property="og:description" content="Site management for civil contractors. Measure work, cost it, and produce the certificate.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0B1220;          /* deep site-blue, not black */
+  --concrete:#141E2E;     /* raised surface */
+  --steel:#8695AC;        /* body text */
+  --chalk:#E9EEF6;        /* headings */
+  --marker:#F59E0B;       /* survey marker / hi-vis */
+  --signal:#3B82F6;       /* the app's blue */
+  --paid:#22C55E;         /* cash received */
+  --rule:rgba(255,255,255,.10);
+  --maxw:1120px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ink);color:var(--steel);
+  font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:16px;line-height:1.65;
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Rajdhani',system-ui,sans-serif;color:var(--chalk);
+  font-weight:700;line-height:1.1;letter-spacing:-.01em;margin:0}
+a{color:inherit}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--marker);margin:0 0 14px}
+
+/* ── header ─────────────────────────────────────────── */
+.top{position:sticky;top:0;z-index:50;background:rgba(11,18,32,.86);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--rule)}
+.top .wrap{display:flex;align-items:center;gap:20px;height:66px}
+.brand{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:23px;
+  color:var(--chalk);text-decoration:none;letter-spacing:-.02em}
+.brand b{color:var(--signal);font-weight:700}
+.nav{margin-left:auto;display:flex;gap:26px;align-items:center}
+.nav a{color:var(--steel);text-decoration:none;font-size:14px;transition:color .18s}
+.nav a:hover{color:var(--chalk)}
+.btn{display:inline-block;background:var(--marker);color:#161003;text-decoration:none;
+  font-weight:600;font-size:14px;padding:11px 22px;border-radius:6px;
+  transition:transform .18s,box-shadow .18s;border:0;cursor:pointer;font-family:inherit}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 22px -8px rgba(245,158,11,.6)}
+.btn.ghost{background:transparent;color:var(--chalk);border:1px solid var(--rule)}
+.btn.ghost:hover{border-color:var(--marker);color:var(--marker);box-shadow:none}
+a:focus-visible,button:focus-visible{outline:2px solid var(--marker);outline-offset:3px;border-radius:4px}
+
+/* ── hero ───────────────────────────────────────────── */
+.hero{padding:88px 0 76px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:-30% -20% auto 40%;height:120%;
+  background:radial-gradient(50% 55% at 50% 40%,rgba(59,130,246,.13),transparent 70%);
+  pointer-events:none}
+.hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:56px;align-items:center;position:relative}
+.hero h1{font-size:clamp(38px,5.4vw,60px);margin-bottom:20px}
+.hero h1 em{font-style:normal;color:var(--marker)}
+.lede{font-size:18px;max-width:46ch;margin:0 0 30px}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.cta-note{font-size:13px;color:rgba(134,149,172,.75);margin-top:16px}
+
+/* ── the signature: cumulative money chart ──────────── */
+.gap{background:var(--concrete);border:1px solid var(--rule);border-radius:14px;
+  padding:22px 22px 16px;box-shadow:0 30px 70px -40px #000}
+.gap-hd{display:flex;justify-content:space-between;align-items:baseline;
+  gap:12px;margin-bottom:4px;flex-wrap:wrap}
+.gap-hd .t{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:16px;color:var(--chalk)}
+.gap-hd .s{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:rgba(134,149,172,.7)}
+.gap svg{display:block;width:100%;height:auto}
+.gap-legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:rgba(134,149,172,.8)}
+.gap-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;
+  vertical-align:middle}
+.gap-read{margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
+.gap-read .n{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:31px;
+  color:var(--marker);line-height:1;letter-spacing:-.01em}
+.gap-read .c{font-size:13px;margin-top:5px;color:var(--steel)}
+
+/* ── sections ───────────────────────────────────────── */
+.band{padding:76px 0;border-top:1px solid var(--rule)}
+.band h2{font-size:clamp(27px,3.4vw,38px);margin-bottom:14px}
+.band .intro{max-width:58ch;font-size:16.5px;margin:0 0 40px}
+
+/* problem list — real quotes from the trade, not feature bullets */
+.probs{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+.prob{background:var(--ink);padding:26px 24px}
+.prob .q{font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:600;
+  color:var(--chalk);line-height:1.3;margin-bottom:9px}
+.prob p{margin:0;font-size:14.5px;line-height:1.6}
+
+/* roles — the app organised by who actually uses it */
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(246px,1fr));gap:20px}
+.role{background:var(--concrete);border:1px solid var(--rule);border-radius:12px;padding:24px;
+  transition:border-color .2s,transform .2s}
+.role:hover{border-color:rgba(245,158,11,.4);transform:translateY(-2px)}
+.role .who{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--marker);margin-bottom:11px}
+.role h3{font-size:20px;margin-bottom:9px}
+.role p{margin:0;font-size:14.5px}
+
+/* documents — the outputs, shown as a controlled-form register */
+.docs{border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+.doc{display:grid;grid-template-columns:88px 1fr auto;gap:18px;align-items:center;
+  padding:15px 20px;border-bottom:1px solid var(--rule);transition:background .18s}
+.doc:last-child{border-bottom:0}
+.doc:hover{background:rgba(255,255,255,.022)}
+.doc .ref{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--marker);
+  letter-spacing:.04em}
+.doc .nm{color:var(--chalk);font-size:15.5px;font-weight:500}
+.doc .nm span{display:block;font-size:13.5px;color:var(--steel);font-weight:400;margin-top:2px}
+.doc .sig{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(134,149,172,.55);white-space:nowrap}
+
+/* contact */
+.contact{background:var(--concrete);border:1px solid var(--rule);border-radius:14px;
+  padding:40px;display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+.contact h2{margin-bottom:12px}
+.cl{display:flex;flex-direction:column;gap:12px}
+.cl a{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--steel);
+  font-size:15px;transition:color .18s}
+.cl a:hover{color:var(--marker)}
+.cl .ic{width:34px;height:34px;border:1px solid var(--rule);border-radius:8px;
+  display:grid;place-items:center;font-size:15px;flex-shrink:0}
+
+footer{border-top:1px solid var(--rule);padding:30px 0;font-size:13.5px;
+  color:rgba(134,149,172,.7)}
+footer .wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+footer .r{margin-left:auto}
+
+/* reveal on scroll */
+.rv{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+
+@media(max-width:900px){
+  .hero-grid,.contact{grid-template-columns:1fr;gap:34px}
+  .hero{padding:56px 0 50px}
+  .band{padding:56px 0}
+  .nav a:not(.btn){display:none}
+  .contact{padding:28px}
+  .doc{grid-template-columns:70px 1fr;gap:12px}
+  .doc .sig{grid-column:2;text-align:left}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .rv{opacity:1;transform:none;transition:none}
+  .draw{stroke-dasharray:none!important;stroke-dashoffset:0!important;animation:none!important}
+  .fillrise{opacity:1!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top">Civ<b>Metrix</b></a>
+    <nav class="nav">
+      <a href="#problem">Why</a>
+      <a href="#roles">Who uses it</a>
+      <a href="#documents">What it produces</a>
+      <a class="btn" href="#contact">Book a walkthrough</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ══ HERO ══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Site management for civil contractors</p>
+      <h1>Know what you've earned <em>before</em> you claim it.</h1>
+      <p class="lede">CivMetrix measures the work, costs it against your rates, and produces the
+        certificate. So nothing you built goes unclaimed — and every figure can be traced back
+        to the day it was done.</p>
+      <div class="cta-row">
+        <a class="btn" href="#contact">Book a walkthrough</a>
+        <a class="btn ghost" href="#documents">See what it produces</a>
+      </div>
+      <p class="cta-note">Built on site, in Eswatini — for contractors who measure in the rain.</p>
+    </div>
+
+    <!-- Signature: the three lines that decide whether a contract makes money.
+         The amber band is work certified but not yet paid. -->
+    <div class="gap">
+      <div class="gap-hd">
+        <span class="t">Cumulative position</span>
+        <span class="s">Contract to date</span>
+      </div>
+      <svg viewBox="0 0 420 210" role="img" aria-label="Cumulative chart: cost, certified value and cash received, showing the gap between what has been certified and what has been paid.">
+        <defs>
+          <linearGradient id="gapfill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#F59E0B" stop-opacity=".30"/>
+            <stop offset="100%" stop-color="#F59E0B" stop-opacity=".02"/>
+          </linearGradient>
+        </defs>
+        <!-- baseline grid -->
+        <g stroke="rgba(255,255,255,.07)" stroke-width="1">
+          <line x1="34" y1="20"  x2="410" y2="20"/>
+          <line x1="34" y1="65"  x2="410" y2="65"/>
+          <line x1="34" y1="110" x2="410" y2="110"/>
+          <line x1="34" y1="155" x2="410" y2="155"/>
+          <line x1="34" y1="182" x2="410" y2="182"/>
+        </g>
+        <g font-family="IBM Plex Mono, monospace" font-size="8" fill="rgba(134,149,172,.55)">
+          <text x="0" y="23">3.0M</text><text x="0" y="113">1.5M</text><text x="0" y="185">0</text>
+        </g>
+        <!-- the gap: certified above, paid below -->
+        <path class="fillrise" fill="url(#gapfill)"
+          d="M34,182 C110,168 160,132 210,104 C270,72 330,48 410,32
+             L410,74 C330,88 270,108 210,134 C160,156 110,174 34,182 Z"/>
+        <!-- cost -->
+        <path class="draw d3" d="M34,182 C112,170 168,142 220,116 C280,86 340,66 410,50"
+          fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" opacity=".85"/>
+        <!-- certified -->
+        <path class="draw d1" d="M34,182 C110,168 160,132 210,104 C270,72 330,48 410,32"
+          fill="none" stroke="#F59E0B" stroke-width="2.6" stroke-linecap="round"/>
+        <!-- paid -->
+        <path class="draw d2" d="M34,182 C110,174 160,156 210,134 C270,108 330,88 410,74"
+          fill="none" stroke="#22C55E" stroke-width="2.6" stroke-linecap="round"/>
+        <circle class="dot" cx="410" cy="32" r="3.4" fill="#F59E0B"/>
+        <circle class="dot" cx="410" cy="74" r="3.4" fill="#22C55E"/>
+      </svg>
+      <div class="gap-legend">
+        <span><i style="background:#F59E0B"></i>Certified</span>
+        <span><i style="background:#22C55E"></i>Paid</span>
+        <span><i style="background:#8B5CF6"></i>Cost</span>
+      </div>
+      <div class="gap-read">
+        <div class="n" id="counter">E 0</div>
+        <div class="c">certified and not yet in the bank — the number most contractors
+          only discover at month end.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROBLEM ═══════════════════════════════════════ -->
+<section class="band" id="problem">
+  <div class="wrap">
+    <p class="eyebrow rv">What it fixes</p>
+    <h2 class="rv">Work gets built. Then it has to be proved.</h2>
+    <p class="intro rv">Every one of these costs real money, and none of them show up until
+      someone goes looking.</p>
+    <div class="probs rv">
+      <div class="prob">
+        <div class="q">"We built it. Nobody measured it."</div>
+        <p>Quantities live in a foreman's head and a wet notebook. By claim day the detail
+          is gone, so it gets estimated down to be safe.</p>
+      </div>
+      <div class="prob">
+        <div class="q">"The rate was fine. The productivity wasn't."</div>
+        <p>An item loses money for three months before anyone compares what it cost to
+          build against what it earns.</p>
+      </div>
+      <div class="prob">
+        <div class="q">"That variation was never claimed."</div>
+        <p>Extra work is instructed on site, done, and forgotten — because nothing
+          connected the instruction to a quantity.</p>
+      </div>
+      <div class="prob">
+        <div class="q">"Which certificate has actually been paid?"</div>
+        <p>Certified is not the same as received. The gap between them is your money,
+          funding somebody else's project.</p>
+      </div>
+      <div class="prob">
+        <div class="q">"The storeman left. So did the fuel."</div>
+        <p>Deliveries, issues and stock counts in three different books that never
+          reconcile to each other.</p>
+      </div>
+      <div class="prob">
+        <div class="q">"He signed two timesheets that week."</div>
+        <p>A worker moves between gangs and appears on both. Payroll pays it, and nobody
+          catches it until the audit.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ROLES ═════════════════════════════════════════ -->
+<section class="band" id="roles">
+  <div class="wrap">
+    <p class="eyebrow rv">Who uses it</p>
+    <h2 class="rv">One record, entered by the person who was there.</h2>
+    <p class="intro rv">Site staff capture what they already know. Everything above them —
+      the costing, the certificate, the board report — is built from that, not re-typed.</p>
+    <div class="roles rv">
+      <div class="role">
+        <div class="who">Foreman</div>
+        <h3>The day, as it happened</h3>
+        <p>Who worked, on what activity, for how long. Plant hours read off the meter.
+          Transfers between gangs recorded once, not signed twice.</p>
+      </div>
+      <div class="role">
+        <div class="who">Storeman</div>
+        <h3>Stock that reconciles</h3>
+        <p>Materials issued against activities. Fuel requested, received, issued and counted
+          in one closed cycle, so a shortfall is visible the day it happens.</p>
+      </div>
+      <div class="role">
+        <div class="who">Quantity Surveyor</div>
+        <h3>Measured, then certified</h3>
+        <p>Take-off against the drawing register, linked to BOQ items. Rate variance per
+          activity. Certificates that carry the measurement behind every quantity.</p>
+      </div>
+      <div class="role">
+        <div class="who">Contracts Manager</div>
+        <h3>The commercial position</h3>
+        <p>Cost, certified value, cash received and budget read against each other — with
+          the findings written out, not left as four lines on a chart.</p>
+      </div>
+      <div class="role">
+        <div class="who">Director</div>
+        <h3>Where the money is</h3>
+        <p>Margin, cash position, what's outstanding and how long the client takes to pay.
+          The questions you'd ask at a monthly review, answered before you ask.</p>
+      </div>
+      <div class="role">
+        <div class="who">Everyone</div>
+        <h3>Works on a phone</h3>
+        <p>Captured on site, on whatever device is in a pocket. No installation, no
+          licences per seat, no server in an office.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ DOCUMENTS ═════════════════════════════════════ -->
+<section class="band" id="documents">
+  <div class="wrap">
+    <p class="eyebrow rv">What it produces</p>
+    <h2 class="rv">Documents you can hand to a client.</h2>
+    <p class="intro rv">Not screens — controlled forms, with your letterhead, document
+      numbers and signature blocks. The register below is what comes out of it.</p>
+    <div class="docs rv">
+      <div class="doc"><span class="ref">QS-IPC-01</span>
+        <span class="nm">Interim Payment Certificate<span>Quantities, rates and value, with the measurement behind each line</span></span>
+        <span class="sig">Signed · QS + Client</span></div>
+      <div class="doc"><span class="ref">QS-MS-01</span>
+        <span class="nm">Measurement Sheet<span>Dimensions, locations and dates, tied to the IPC it supports</span></span>
+        <span class="sig">Signed · QS</span></div>
+      <div class="doc"><span class="ref">HR-WTS-01</span>
+        <span class="nm">Weekly Time Sheet<span>One sheet per foreman, start and finish times, employee signature</span></span>
+        <span class="sig">Signed · Foreman + Manager</span></div>
+      <div class="doc"><span class="ref">PL-MPR-01</span>
+        <span class="nm">Monthly Plant Return<span>Hours from the meter, downtime, inclement weather, agreed hours</span></span>
+        <span class="sig">Signed · Plant + Client</span></div>
+      <div class="doc"><span class="ref">ST-FSL-01</span>
+        <span class="nm">Fuel Stock Ledger<span>Every receipt and issue in one ordered ledger with a running balance</span></span>
+        <span class="sig">Signed · Stores</span></div>
+      <div class="doc"><span class="ref">CM-CST-01</span>
+        <span class="nm">Costing Report<span>Cost by type and month, budget variance, and the commercial position</span></span>
+        <span class="sig">Internal</span></div>
+      <div class="doc"><span class="ref">QS-DWG-01</span>
+        <span class="nm">Drawing Control Register<span>Quantity per element, consumed against measured, variation warnings</span></span>
+        <span class="sig">Signed · QS</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CONTACT ═══════════════════════════════════════ -->
+<section class="band" id="contact">
+  <div class="wrap">
+    <div class="contact rv">
+      <div>
+        <p class="eyebrow">Get started</p>
+        <h2>Bring one site onto it.</h2>
+        <p style="margin:0 0 22px;max-width:44ch">The fastest way to judge this is against
+          work you already know. Send a BOQ and a month of records, and see the certificate
+          it produces.</p>
+        <a class="btn" href="mailto:siboniso@civmetrix.com?subject=CivMetrix%20walkthrough">Book a walkthrough</a>
+      </div>
+      <div class="cl">
+        <a href="mailto:siboniso@civmetrix.com"><span class="ic">&#9993;</span>siboniso@civmetrix.com</a>
+        <a href="tel:+268"><span class="ic">&#128241;</span>Add your cell number</a>
+        <a href="https://app.civmetrix.com"><span class="ic">&#128274;</span>app.civmetrix.com</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>CivMetrix — Eswatini</span>
+    <span class="r">&copy; <span id="yr">2026</span> CivMetrix. All rights reserved.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  /* Draw the three lines in sequence, then raise the gap fill. The order matters:
+     cost first, then what was certified, then what actually arrived. */
+  if(!reduce){
+    var paths = document.querySelectorAll('.draw');
+    paths.forEach(function(p,i){
+      var len = p.getTotalLength();
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+      p.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(.22,.61,.36,1)';
+      setTimeout(function(){ p.style.strokeDashoffset = 0; }, 260 + i*230);
+    });
+    var fill = document.querySelector('.fillrise');
+    if(fill){ fill.style.opacity=0; fill.style.transition='opacity .9s ease';
+      setTimeout(function(){ fill.style.opacity=1; }, 1500); }
+    document.querySelectorAll('.dot').forEach(function(d,i){
+      d.style.opacity=0; d.style.transition='opacity .5s ease';
+      setTimeout(function(){ d.style.opacity=1; }, 1650+i*140);
+    });
+  }
+
+  /* Count the gap up. A figure that lands rather than simply appearing. */
+  var el = document.getElementById('counter'), target = 685901, started = false;
+  function money(n){ return 'E ' + Math.round(n).toLocaleString('en-ZA'); }
+  function run(){
+    if(started) return; started = true;
+    if(reduce){ el.textContent = money(target); return; }
+    var t0 = null, dur = 1500;
+    function step(ts){
+      if(!t0) t0 = ts;
+      var k = Math.min(1,(ts-t0)/dur);
+      el.textContent = money(target * (1-Math.pow(1-k,3)));
+      if(k<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  setTimeout(run, 900);
+
+  /* Reveal sections as they arrive */
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    },{threshold:.12});
+    document.querySelectorAll('.rv').forEach(function(n){ io.observe(n); });
+  } else {
+    document.querySelectorAll('.rv').forEach(function(n){ n.classList.add('in'); });
+  }
+})();
+</script>
+</body>
+</html>
