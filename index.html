@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CivMetrix — Measured. Costed. Certified.</title>
+<meta name="description" content="Site management for civil contractors. Measure the work, cost it against your rates, and produce the certificate — so nothing built goes unclaimed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Tokens taken from the application itself, so the site and the product
+   read as one thing. Where the app is dense, the site is spacious. */
+:root{
+  --bg:#080D1A; --surface:#0E1525; --card:#141D30;
+  --border:#1E2D47; --border2:#243558;
+  --signal:#2563EB; --signal2:#60A5FA; --signal-dim:rgba(37,99,235,.12);
+  --green:#22c55e; --red:#ef4444; --orange:#f97316;
+  --text:#e8eaf0; --text2:#8b96aa; --text3:#4d596e;
+  --fh:'Rajdhani',sans-serif; --fm:'IBM Plex Mono',monospace; --fb:'Inter',sans-serif;
+  --r:8px; --r2:12px; --maxw:1200px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text2);font-family:var(--fb);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--fh);color:var(--text);font-weight:700;line-height:1.04;
+  letter-spacing:-.01em;margin:0}
+a{color:inherit}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,5vw,56px)}
+.eyebrow{font-family:var(--fm);font-size:10.5px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--signal2);margin:0 0 14px}
+
+.top{position:sticky;top:0;z-index:60;background:rgba(8,13,26,.88);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border)}
+.top .wrap{display:flex;align-items:center;gap:22px;height:66px}
+.brand{font-family:var(--fh);font-weight:700;font-size:23px;letter-spacing:-.02em;
+  text-decoration:none;color:var(--text)}
+.brand span{color:var(--signal2)}
+.nav{margin-left:auto;display:flex;gap:26px;align-items:center}
+.nav a{text-decoration:none;font-size:13.5px;color:var(--text2);transition:color .18s}
+.nav a:hover{color:var(--text)}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--signal);color:#fff;
+  text-decoration:none;font-family:var(--fm);font-size:11.5px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;padding:12px 20px;border-radius:var(--r);
+  border:1px solid var(--signal);transition:all .18s;cursor:pointer}
+.btn:hover{background:var(--signal2);border-color:var(--signal2)}
+.btn.line{background:transparent;color:var(--text);border-color:var(--border2)}
+.btn.line:hover{border-color:var(--signal2);color:var(--signal2);background:transparent}
+a:focus-visible,button:focus-visible{outline:2px solid var(--signal2);outline-offset:3px}
+
+.hero{padding:80px 0 24px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:-40% -10% auto 32%;height:130%;
+  background:radial-gradient(46% 52% at 50% 42%,rgba(37,99,235,.15),transparent 72%);
+  pointer-events:none}
+.hero-in{position:relative}
+.hero h1{font-size:clamp(44px,7.4vw,88px);letter-spacing:-.03em}
+.hero h1 .b{color:var(--signal2)}
+.hsub{display:grid;grid-template-columns:1fr auto;gap:34px;align-items:end;
+  margin-top:28px;padding-top:24px;border-top:1px solid var(--border)}
+.hsub p{margin:0;font-size:17px;max-width:52ch}
+.cta{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:860px){ .hsub{grid-template-columns:1fr;gap:22px} }
+
+/* ── The Dashboard, as the product renders it ──────────────────────
+   Ten readings on a carousel, a chainage rail beneath, and any card
+   opening full screen. Names, tags and order are the app's own.      */
+.demo{margin-top:48px}
+.dxshell{background:linear-gradient(160deg,var(--card),var(--surface));
+  border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;
+  box-shadow:0 30px 70px -40px #000;position:relative}
+.dxbar{display:flex;align-items:center;gap:7px;padding:9px 14px;
+  background:var(--surface);border-bottom:1px solid var(--border)}
+.dxbar i{width:9px;height:9px;border-radius:50%;background:var(--border2);display:block}
+.dxbar .path{margin-left:9px;font-family:var(--fm);font-size:10px;letter-spacing:.1em;
+  color:var(--text3)}
+.dxbar .path b{color:var(--signal2);font-weight:500}
+.dxstage{position:relative;min-height:356px}
+.dxcard{padding:20px 24px 16px}
+.dxhd{position:relative;padding-bottom:12px;border-bottom:1px solid var(--border);
+  margin-bottom:16px}
+.dxhd .n{font-family:var(--fm);font-size:10.5px;color:var(--signal2);letter-spacing:.14em}
+.dxhd .e{font-family:var(--fm);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--text3);margin-top:6px}
+.dxhd .t{font-family:var(--fh);font-weight:700;font-size:23px;color:var(--text);
+  letter-spacing:-.01em;margin-top:1px;display:inline-block}
+.dxexp{position:absolute;top:0;right:0;background:var(--signal-dim);
+  border:1px solid rgba(37,99,235,.42);color:var(--signal2);border-radius:6px;
+  height:25px;padding:0 10px;font-family:var(--fm);font-size:9px;font-weight:600;
+  letter-spacing:.09em;text-transform:uppercase;display:flex;align-items:center;
+  transition:all .2s;cursor:zoom-in}
+.dxexp.hit{background:var(--signal2);color:#0B1020;border-color:var(--signal2)}
+.dxbody{min-height:216px;transition:opacity .24s ease}
+.dxbody.fade{opacity:0}
+.dxrail{display:flex;border-top:1px solid var(--border);background:var(--surface)}
+.dxpeg{flex:1;padding:8px 2px;text-align:center;border:0;border-right:1px solid var(--border);
+  cursor:pointer;background:transparent;transition:background .25s}
+.dxpeg:last-child{border-right:0}
+.dxpeg .n{display:block;font-family:var(--fm);font-size:9px;color:var(--text3);letter-spacing:.08em}
+.dxpeg .t{display:block;font-size:9.5px;color:var(--text3);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dxpeg.on{background:var(--signal-dim)}
+.dxpeg.on .n,.dxpeg.on .t{color:var(--signal2)}
+.dxhint{padding:9px 14px;font-family:var(--fm);font-size:9.5px;letter-spacing:.1em;
+  color:var(--text3);border-top:1px solid var(--border);text-align:center}
+@media(max-width:760px){ .dxpeg .t{display:none} }
+
+/* the full-screen state a tap opens */
+.dxfull{position:absolute;inset:0;background:var(--bg);z-index:5;display:flex;
+  flex-direction:column;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.dxfull.on{opacity:1}
+.dxfull .fh{display:flex;align-items:center;gap:12px;padding:14px 18px;
+  border-bottom:1px solid var(--border);flex-wrap:wrap}
+.dxfull .num{font-family:var(--fm);font-size:11px;color:var(--signal2);letter-spacing:.14em}
+.dxfull .ttl{font-family:var(--fh);font-weight:700;font-size:25px;color:var(--text)}
+.dxfull .tag{font-family:var(--fm);font-size:9.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--text3)}
+.dxfull .cls{margin-left:auto;font-family:var(--fm);font-size:9.5px;letter-spacing:.1em;
+  color:var(--text3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px}
+.dxfull .fb{flex:1;padding:20px 22px;overflow:hidden}
+
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:14px;
+  margin-bottom:16px}
+.fig .v{font-family:var(--fh);font-weight:700;font-size:29px;line-height:1;letter-spacing:-.02em}
+.fig .k{font-size:11px;color:var(--text3);margin-top:5px}
+.dxsub{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:16px}
+.brow{margin-bottom:12px}
+.brow .lb{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.brow .tr{height:7px;border-radius:4px;background:#1E2D47;overflow:hidden}
+.brow .tr i{display:block;height:100%;border-radius:4px;transform-origin:left;
+  animation:grow .85s cubic-bezier(.16,.84,.32,1) forwards}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.dtbl{width:100%;border-collapse:collapse}
+.dtbl th{font-family:var(--fm);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--text3);text-align:left;font-weight:500;padding:6px 9px;
+  border-bottom:1px solid var(--border2)}
+.dtbl th.n,.dtbl td.n{text-align:right}
+.dtbl td{padding:7px 9px;border-bottom:1px solid var(--border);font-size:12.5px}
+.dtbl tr:last-child td{border-bottom:0}
+.alert{display:flex;padding:9px 11px;border:1px solid var(--border);border-radius:8px;
+  margin-bottom:8px}
+.alert .a{font-size:12.5px;color:var(--text);font-weight:600}
+.alert .b{font-size:11.5px;color:var(--text2);margin-top:2px}
+
+.band{padding:82px 0;border-top:1px solid var(--border)}
+.band h2{font-size:clamp(29px,3.9vw,44px)}
+.band .intro{max-width:58ch;margin:15px 0 40px;font-size:16.5px}
+.probs{display:grid;grid-template-columns:repeat(auto-fit,minmax(276px,1fr));gap:1px;
+  background:var(--border);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.prob{background:var(--surface);padding:26px 24px;transition:background .2s}
+.prob:hover{background:var(--card)}
+.prob .n{font-family:var(--fm);font-size:10px;color:var(--signal2);letter-spacing:.14em}
+.prob .q{font-family:var(--fh);font-size:20px;font-weight:600;color:var(--text);
+  line-height:1.26;margin:9px 0 8px}
+.prob p{margin:0;font-size:14.5px}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:16px}
+.role{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);
+  padding:24px 22px;transition:border-color .2s,transform .2s;position:relative;overflow:hidden}
+.role:hover{border-color:var(--border2);transform:translateY(-2px)}
+.role::before{content:'';position:absolute;left:0;right:0;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--signal2),transparent);
+  transform:scaleX(0);transition:transform .45s ease}
+.role:hover::before{transform:scaleX(1)}
+.role .who{font-family:var(--fm);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--signal2);margin-bottom:11px}
+.role h3{font-size:19px;margin-bottom:8px}
+.role p{margin:0;font-size:14.5px}
+.reg{width:100%;border-collapse:collapse;border:1px solid var(--border);
+  border-radius:var(--r2);overflow:hidden}
+.reg th{font-family:var(--fm);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--text3);text-align:left;font-weight:500;padding:11px 16px;
+  background:var(--surface);border-bottom:1px solid var(--border)}
+.reg td{padding:13px 16px;border-bottom:1px solid var(--border);font-size:15px;vertical-align:top}
+.reg tr:last-child td{border-bottom:0}
+.reg tbody tr:hover{background:var(--card)}
+.reg .rf{font-family:var(--fm);font-size:11px;color:var(--signal2);white-space:nowrap}
+.reg .nm{color:var(--text);font-weight:600}
+.reg .ds{display:block;font-size:13.5px;color:var(--text2);font-weight:400;margin-top:3px}
+.reg .sg{font-family:var(--fm);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text3);white-space:nowrap}
+@media(max-width:740px){ .reg .sg,.reg th:last-child,.reg td:last-child{display:none} }
+.plans{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.plan{background:var(--surface);padding:26px 22px;display:flex;flex-direction:column}
+.plan.mark{background:var(--card);box-shadow:inset 0 3px 0 var(--signal)}
+.plan .tg{font-family:var(--fm);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--signal2);height:14px}
+.plan .pn{font-family:var(--fh);font-weight:700;font-size:27px;color:var(--text);
+  letter-spacing:-.02em;line-height:1;margin-top:4px}
+.plan .pm{font-size:12.5px;margin:6px 0 18px;min-height:34px}
+.plan ul{list-style:none;margin:0 0 16px;padding:0;font-size:14px}
+.plan li{padding:8px 0;border-bottom:1px solid var(--border);display:flex;
+  justify-content:space-between;gap:10px}
+.plan li:last-child{border-bottom:0}
+.plan li b{color:var(--text);font-weight:600}
+.plan li.off,.plan li.off b{color:var(--text3);font-weight:400}
+.plan .pnote{margin:auto 0 0;font-size:12.5px;line-height:1.55;padding-top:14px;
+  border-top:1px solid var(--border)}
+/* price block on each plan */
+.plan .pr{font-family:var(--fh);font-weight:700;font-size:32px;color:var(--text);
+  letter-spacing:-.02em;line-height:1;margin:14px 0 2px}
+.plan .pr small{font-family:var(--fb);font-size:12.5px;font-weight:500;color:var(--text2);
+  letter-spacing:0}
+.plan .pu{font-size:11.5px;color:var(--text3);margin-bottom:16px;min-height:16px}
+.plan.mark .pr{color:var(--signal2)}
+.stor{margin-top:26px;border:1px solid var(--border);border-radius:var(--r2);
+  padding:22px 24px;background:linear-gradient(160deg,var(--card),var(--surface));
+  display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center}
+.stor .amt{font-family:var(--fh);font-weight:700;font-size:34px;color:var(--signal2);
+  line-height:1;letter-spacing:-.02em;white-space:nowrap}
+.stor .amt small{font-family:var(--fb);font-size:13px;font-weight:500;color:var(--text2);
+  letter-spacing:0}
+.stor h3{font-size:19px;margin-bottom:6px}
+.stor p{margin:0;font-size:14px;line-height:1.6}
+@media(max-width:660px){ .stor{grid-template-columns:1fr;gap:14px} }
+
+.pnotes{display:grid;grid-template-columns:repeat(auto-fit,minmax(252px,1fr));gap:22px;
+  margin-top:26px;font-size:14px;line-height:1.6}
+.pnotes b{color:var(--text)}
+@media(max-width:1000px){ .plans{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:600px){ .plans{grid-template-columns:1fr} }
+.contact{background:linear-gradient(160deg,var(--card),var(--surface));
+  border:1px solid var(--border);border-radius:var(--r2);padding:40px;
+  display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
+.cl{display:flex;flex-direction:column;gap:11px}
+.cl a{display:flex;align-items:center;gap:12px;text-decoration:none;font-size:15px;
+  transition:color .18s}
+.cl a:hover{color:var(--signal2)}
+.cl .ic{width:34px;height:34px;border:1px solid var(--border);border-radius:var(--r);
+  display:grid;place-items:center;font-size:14px;flex-shrink:0;background:var(--surface)}
+@media(max-width:820px){ .contact{grid-template-columns:1fr;gap:30px;padding:28px} }
+footer{border-top:1px solid var(--border);padding:26px 0 40px;font-family:var(--fm);
+  font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)}
+footer .wrap{display:flex;gap:18px;flex-wrap:wrap}
+footer .r{margin-left:auto}
+
+.rv{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .rv{opacity:1;transform:none;transition:none}
+  .brow .tr i{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top">Civ<span>Metrix</span></a>
+    <nav class="nav">
+      <a href="#problem">Why</a>
+      <a href="#roles">Who uses it</a>
+      <a href="#documents">Output</a>
+      <a href="#plans">Plans</a>
+      <a class="btn" href="#contact">Book a walkthrough</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="wrap hero-in">
+    <p class="eyebrow">Site management for civil contractors · Eswatini</p>
+    <h1>Measured. Costed.<br><span class="b">Certified.</span></h1>
+    <div class="hsub">
+      <p>CivMetrix measures the work, costs it against your rates, and produces the
+        certificate — so nothing you built goes unclaimed, and every figure traces back
+        to the day it was done.</p>
+      <div class="cta">
+        <a class="btn" href="#contact">Book a walkthrough</a>
+        <a class="btn line" href="#documents">See the output</a>
+      </div>
+    </div>
+
+    <div class="demo rv">
+      <div class="dxshell">
+        <div class="dxbar">
+          <i></i><i></i><i></i>
+          <span class="path">app.civmetrix.com &nbsp;›&nbsp; <b>Dashboard</b></span>
+        </div>
+        <div class="dxstage">
+          <div class="dxcard">
+            <div class="dxhd">
+              <span class="n" id="d-n">01 / 10</span>
+              <div class="e" id="d-e">Programme</div>
+              <div class="t" id="d-t">Time</div>
+              <span class="dxexp" id="d-exp">&#9974; Expand</span>
+            </div>
+            <div class="dxbody" id="d-body"></div>
+          </div>
+          <div class="dxfull" id="d-full">
+            <div class="fh">
+              <span class="num" id="f-n">01</span>
+              <span class="ttl" id="f-t">Time</span>
+              <span class="tag" id="f-e">Programme</span>
+              <span class="cls">&#10005; Close</span>
+            </div>
+            <div class="fb" id="f-body"></div>
+          </div>
+        </div>
+        <div class="dxrail" id="d-rail"></div>
+        <div class="dxhint">Tap a card title to open it full screen &nbsp;·&nbsp;
+          swipe or press &larr; &rarr; to move between readings</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="problem">
+  <div class="wrap">
+    <p class="eyebrow rv">01 — What it fixes</p>
+    <h2 class="rv">Work gets built. Then it has to be proved.</h2>
+    <p class="intro rv">Every one of these costs real money, and none of them show up
+      until someone goes looking.</p>
+    <div class="probs rv">
+      <div class="prob"><div class="n">01</div>
+        <div class="q">&ldquo;We built it. Nobody measured it.&rdquo;</div>
+        <p>Quantities live in a foreman&rsquo;s head and a wet notebook. By claim day the
+          detail is gone, so it gets estimated down to be safe.</p></div>
+      <div class="prob"><div class="n">02</div>
+        <div class="q">&ldquo;The rate was fine. The productivity wasn&rsquo;t.&rdquo;</div>
+        <p>An item loses money for three months before anyone compares what it cost
+          to build against what it earns.</p></div>
+      <div class="prob"><div class="n">03</div>
+        <div class="q">&ldquo;That variation was never claimed.&rdquo;</div>
+        <p>Extra work is instructed on site, done, and forgotten — because nothing
+          connected the instruction to a quantity.</p></div>
+      <div class="prob"><div class="n">04</div>
+        <div class="q">&ldquo;Which certificate has actually been paid?&rdquo;</div>
+        <p>Certified is not the same as received. The gap between them is your money,
+          funding somebody else&rsquo;s project.</p></div>
+      <div class="prob"><div class="n">05</div>
+        <div class="q">&ldquo;The storeman left. So did the fuel.&rdquo;</div>
+        <p>Deliveries, issues and stock counts in three different books that never
+          reconcile to each other.</p></div>
+      <div class="prob"><div class="n">06</div>
+        <div class="q">&ldquo;He signed two timesheets that week.&rdquo;</div>
+        <p>A worker moves between gangs and appears on both. Payroll pays it, and
+          nobody catches it until the audit.</p></div>
+    </div>
+  </div>
+</section>
+
+
+
+
+<section class="band" id="roles">
+  <div class="wrap">
+    <p class="eyebrow rv">02 — Who uses it</p>
+    <h2 class="rv">One record, entered by the person who was there.</h2>
+    <p class="intro rv">Site staff capture what they already know. Everything above
+      them — the costing, the certificate, the board report — is built from that,
+      not re-typed.</p>
+    <div class="roles rv">
+      <div class="role"><div class="who">Foreman</div><h3>The day, as it happened</h3>
+        <p>Who worked, on what activity, for how long. Plant hours read off the meter.
+          Fields open one at a time, so a record cannot be half filled.</p></div>
+      <div class="role"><div class="who">Storeman</div><h3>Stock that reconciles</h3>
+        <p>Materials issued against activities. Fuel requested, received, issued and
+          counted in one closed cycle, so a shortfall shows the day it happens.</p></div>
+      <div class="role"><div class="who">Quantity Surveyor</div><h3>Measured, then certified</h3>
+        <p>Take-off against the drawing register, linked to BOQ items. Rate variance
+          per activity. Certificates carrying the measurement behind every quantity.</p></div>
+      <div class="role"><div class="who">Contracts Manager</div><h3>The commercial position</h3>
+        <p>Cost, certified value, cash received and budget read against each other —
+          with the findings written out, not left as four lines on a chart.</p></div>
+      <div class="role"><div class="who">Director</div><h3>Where the money is</h3>
+        <p>Margin, cash position, what is outstanding and how long the client takes
+          to pay. Every reading opens full screen, in one tap.</p></div>
+      <div class="role"><div class="who">Everyone</div><h3>Works on a phone</h3>
+        <p>Captured on site, on whatever device is in a pocket. Nothing to install
+          and no server in an office.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="documents">
+  <div class="wrap">
+    <p class="eyebrow rv">03 — What it produces</p>
+    <h2 class="rv">Documents you can hand to a client.</h2>
+    <p class="intro rv">Not screens — controlled forms, with your letterhead, document
+      numbers and signature blocks. This register is what comes out of it.</p>
+    <table class="reg rv">
+      <thead><tr><th style="width:120px">Ref</th><th>Document</th><th style="width:200px">Signed by</th></tr></thead>
+      <tbody>
+        <tr><td class="rf">QS-IPC-01</td>
+          <td class="nm">Interim Payment Certificate<span class="ds">Quantities, rates and value, with the measurement behind each line</span></td>
+          <td class="sg">QS · Client</td></tr>
+        <tr><td class="rf">QS-MS-01</td>
+          <td class="nm">Measurement Sheet<span class="ds">Dimensions, locations and dates, tied to the certificate it supports</span></td>
+          <td class="sg">QS</td></tr>
+        <tr><td class="rf">HR-WTS-01</td>
+          <td class="nm">Weekly Time Sheet<span class="ds">One sheet per foreman, start and finish times, employee signature</span></td>
+          <td class="sg">Foreman · Manager</td></tr>
+        <tr><td class="rf">PL-MPR-01</td>
+          <td class="nm">Monthly Plant Return<span class="ds">Hours off the meter, downtime, inclement weather, agreed hours</span></td>
+          <td class="sg">Plant · Client</td></tr>
+        <tr><td class="rf">ST-FSL-01</td>
+          <td class="nm">Fuel Stock Ledger<span class="ds">Every receipt and issue in one ordered ledger with a running balance</span></td>
+          <td class="sg">Stores</td></tr>
+        <tr><td class="rf">CM-CST-01</td>
+          <td class="nm">Costing Report<span class="ds">Cost by type and month, budget variance, and the commercial position</span></td>
+          <td class="sg">Internal</td></tr>
+        <tr><td class="rf">QS-DWG-01</td>
+          <td class="nm">Drawing Control Register<span class="ds">Quantity per element, consumed against measured, variation warnings</span></td>
+          <td class="sg">QS</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="band" id="plans">
+  <div class="wrap">
+    <p class="eyebrow rv">04 — Plans</p>
+    <h2 class="rv">Start on a trial. Move up when the site grows.</h2>
+    <p class="intro rv">Every plan carries the full system — measurement, costing,
+      certificates, reporting. What changes is how many people work at once, how much
+      history you hold, and the specialist tools.</p>
+    <div class="plans rv">
+      <div class="plan">
+        <div class="tg"></div><div class="pn">Trial</div>
+        <div class="pm">20 days · no payment</div>
+        <div class="pr">E 0<small>.00</small></div>
+        <div class="pu">Free for 20 days</div>
+        <ul>
+          <li><span>Licences</span><b>3</b></li>
+          <li><span>Storage / month</span><b>1.5 MB</b></li>
+          <li><span>Core modules</span><b>All</b></li>
+          <li><span>Download your data</span><b>Yes</b></li>
+          <li class="off"><span>Restore from backup</span><b>&mdash;</b></li>
+          <li class="off"><span>Drawing Control</span><b>&mdash;</b></li>
+        </ul>
+        <p class="pnote">Enough to run a site for a few weeks and see the reports with
+          your own figures.</p>
+      </div>
+      <div class="plan">
+        <div class="tg"></div><div class="pn">Starter</div>
+        <div class="pm">One site · small crew</div>
+        <div class="pr">E 200<small>.00</small></div>
+        <div class="pu">per licence &middot; month &middot; storage included</div>
+        <ul>
+          <li><span>Licences</span><b>6</b></li>
+          <li><span>Storage / month</span><b>25 MB</b></li>
+          <li><span>Core modules</span><b>All</b></li>
+          <li><span>Download your data</span><b>Yes</b></li>
+          <li class="off"><span>Restore from backup</span><b>&mdash;</b></li>
+          <li class="off"><span>Drawing Control</span><b>&mdash;</b></li>
+        </ul>
+        <p class="pnote">About a year of records for a contractor running two or three
+          projects.</p>
+      </div>
+      <div class="plan mark">
+        <div class="tg">Most contractors</div><div class="pn">Pro</div>
+        <div class="pm">Several sites at once</div>
+        <div class="pr">E 400<small>.00</small></div>
+        <div class="pu">per licence &middot; month &middot; storage included</div>
+        <ul>
+          <li><span>Licences</span><b>15</b></li>
+          <li><span>Storage / month</span><b>50 MB</b></li>
+          <li><span>Core modules</span><b>All</b></li>
+          <li><span>Download your data</span><b>Yes</b></li>
+          <li><span>Restore from backup</span><b>Yes</b></li>
+          <li class="off"><span>Drawing Control</span><b>&mdash;</b></li>
+        </ul>
+        <p class="pnote">Room for a QS, a contracts manager and the site teams, with
+          recovery if something goes wrong.</p>
+      </div>
+      <div class="plan">
+        <div class="tg"></div><div class="pn">Max</div>
+        <div class="pm">Multi-site contractor</div>
+        <div class="pr">E 600<small>.00</small></div>
+        <div class="pu">per licence &middot; month &middot; storage included</div>
+        <ul>
+          <li><span>Licences</span><b>Unlimited</b></li>
+          <li><span>Storage / month</span><b>100 MB</b></li>
+          <li><span>Core modules</span><b>All</b></li>
+          <li><span>Download your data</span><b>Yes</b></li>
+          <li><span>Restore from backup</span><b>Yes</b></li>
+          <li><span>Drawing Control</span><b>Yes</b></li>
+        </ul>
+        <p class="pnote">Everything, with take-off measured straight against the
+          drawing register.</p>
+      </div>
+    </div>
+
+    <div class="stor rv">
+      <div class="amt">E 50<small>.00</small><div style="font-family:var(--fb);font-size:12px;
+        font-weight:400;color:var(--text3);margin-top:6px;letter-spacing:0">per 1 MB</div></div>
+      <div>
+        <h3>Run out mid-month?</h3>
+        <p>Buy additional storage to finish the month, on any plan. Your allowance starts
+          again with your next payment. <b>Nothing is ever deleted</b> &mdash; if you reach
+          the limit you can still read, report and download everything; only new records
+          pause until you top up or the next month begins.</p>
+      </div>
+    </div>
+    <div class="pnotes rv">
+      <div><b>Register everyone.</b> A licence covers one person signed in at a time,
+        not one person. Your whole crew has an account; the licences cover who is
+        working right now.</div>
+      <div><b>Need more space?</b> Additional storage can be added to any plan — you do
+        not have to move up a tier to get it.</div>
+      <div><b>Your records stay yours.</b> Nothing is ever deleted, and you can download
+        everything at any time, on every plan, including the trial.</div>
+      <div><b>Move between plans whenever.</b> Upgrading or downgrading takes effect
+        immediately, and nothing is lost either way.</div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="contact">
+  <div class="wrap">
+    <div class="contact rv">
+      <div>
+        <p class="eyebrow">05 — Get started</p>
+        <h2 style="font-size:clamp(27px,3.6vw,40px);margin-bottom:12px">Bring one site
+          onto it.</h2>
+        <p style="margin:0 0 22px;max-width:44ch">The fastest way to judge this is
+          against work you already know. Send a BOQ and a month of records, and see the
+          certificate it produces.</p>
+        <a class="btn" href="mailto:info@civmetrix.com?subject=CivMetrix%20walkthrough">Book a walkthrough</a>
+      </div>
+      <div class="cl">
+        <a href="mailto:info@civmetrix.com"><span class="ic">&#9993;</span>info@civmetrix.com</a>
+        <a href="https://app.civmetrix.com"><span class="ic">&#128274;</span>app.civmetrix.com</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>CivMetrix</span><span>Rev 03</span>
+    <span class="r">&copy; <span id="yr">2026</span> &mdash; All rights reserved</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var yr = document.getElementById('yr');
+  if (yr) yr.textContent = new Date().getFullYear();
+
+  /* ── Dashboard demo ───────────────────────────────────────────────
+     The ten readings, their numbers and their tags are the application's
+     own, read out of the product. The sequence steps along the carousel,
+     opens a card full screen so the behaviour is obvious, closes it, and
+     carries on. It stops whenever it is off screen.                    */
+
+  function fig(v, k, c) {
+    return '<div class="fig"><div class="v" style="color:' + (c || 'var(--text)') + '">' +
+      v + '</div><div class="k">' + k + '</div></div>';
+  }
+  function figs(list) {
+    return '<div class="figs">' + list.map(function (f) {
+      return fig(f[0], f[1], f[2]);
+    }).join('') + '</div>';
+  }
+  function sub(t) { return '<div class="dxsub">' + t + '</div>'; }
+  function bar(label, val, pct, col) {
+    return '<div class="brow"><div class="lb"><span>' + label + '</span><b style="color:' +
+      col + '">' + val + '</b></div><div class="tr"><i style="width:' + pct +
+      '%;background:' + col + '"></i></div></div>';
+  }
+  function tbl(head, rows) {
+    var h = head.map(function (x, i) {
+      return '<th' + (i ? ' class="n"' : '') + '>' + x + '</th>';
+    }).join('');
+    var b = rows.map(function (r) {
+      return '<tr>' + r.map(function (c, i) {
+        return '<td' + (i ? ' class="n"' : '') + '>' + c + '</td>';
+      }).join('') + '</tr>';
+    }).join('');
+    return '<table class="dtbl"><thead><tr>' + h + '</tr></thead><tbody>' + b + '</tbody></table>';
+  }
+  function alerts(list) {
+    return list.map(function (a) {
+      return '<div class="alert" style="border-left:3px solid ' + a[0] + '">' +
+        '<div><div class="a">' + a[1] + '</div><div class="b">' + a[2] + '</div></div></div>';
+    }).join('');
+  }
+
+  var CARDS = [
+    { n: '01', tag: 'Programme', title: 'Time', body:
+      sub('Physical completion measured against calendar time elapsed. A gap either way is the earliest warning you get.') +
+      figs([['47%', 'Physically complete', 'var(--signal2)'],
+            ['84 / 180', 'Days elapsed', 'var(--text)'],
+            ['&minus;6.7%', 'Variance', 'var(--red)']]) +
+      bar('Work done', '47%', 47, 'var(--signal)') +
+      bar('Time used', '53%', 53, 'var(--signal2)') },
+
+    { n: '02', tag: 'Commercial', title: 'Value', body:
+      sub('Certified is signed off. Pending is measured but not yet claimed. Unmeasured is contract value with no work against it.') +
+      bar('Certified', 'E 2 480 000', 82, 'var(--signal)') +
+      bar('Measured, not yet claimed', 'E 310 000', 10, 'var(--orange)') +
+      bar('Unmeasured', 'E 240 000', 8, 'var(--text3)') +
+      sub('E 310 000 is built and measured. It has simply not been claimed.') },
+
+    { n: '03', tag: 'Commercial', title: 'Money', body:
+      figs([['E 2.41M', 'Certified', 'var(--signal2)'],
+            ['E 1.72M', 'Cash received', 'var(--green)'],
+            ['E 690k', 'Outstanding', 'var(--orange)'],
+            ['18.4%', 'Margin', 'var(--green)']]) +
+      tbl(['Finding', 'Derivation', 'Value'],
+        [['Client pays in ~38 days', 'approval to payment', '38 d'],
+         ['Retention held', '5% of certified', 'E 120 500'],
+         ['Over budget &mdash; Earthworks', 'actual vs budget', '+E 84 200']]) },
+
+    { n: '04', tag: 'Progress', title: 'S-Curve', body:
+      sub('Planned against certified, with cost and cash received on the same axis.') +
+      '<svg viewBox="0 0 640 176" style="width:100%;height:auto;display:block">' +
+      '<g stroke="#1E2D47" stroke-width="1">' +
+      '<line x1="30" y1="14" x2="628" y2="14"/><line x1="30" y1="60" x2="628" y2="60"/>' +
+      '<line x1="30" y1="106" x2="628" y2="106"/><line x1="30" y1="152" x2="628" y2="152"/></g>' +
+      '<path d="M30,152 C160,138 250,108 350,82 C460,54 550,32 628,20" fill="none" ' +
+      'stroke="#8b96aa" stroke-width="1.6" stroke-dasharray="5 4"/>' +
+      '<path d="M30,152 C160,134 250,100 350,72 C460,42 550,24 628,14" fill="none" ' +
+      'stroke="#2563EB" stroke-width="2.4"/>' +
+      '<path d="M30,152 C160,146 250,130 350,110 C460,86 550,68 628,56" fill="none" ' +
+      'stroke="#22c55e" stroke-width="2.4"/></svg>' +
+      '<div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-family:var(--fm);' +
+      'font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)">' +
+      '<span style="color:var(--signal2)">Certified</span>' +
+      '<span style="color:var(--green)">Cash received</span><span>Planned</span></div>' },
+
+    { n: '05', tag: 'Quantities', title: 'BOQ', body:
+      tbl(['Item', 'BOQ', 'Certified', '%'],
+        [['Bulk excavation', '12 400 m&sup3;', '9 860', '79%'],
+         ['Layerworks G5', '8 200 m&sup3;', '5 140', '63%'],
+         ['Kerbing', '3 100 m', '2 980', '96%'],
+         ['Subsoil drain', '1 450 m', '610', '42%']]) },
+
+    { n: '06', tag: 'People', title: 'Labour', body:
+      figs([['55', 'On site today', 'var(--signal2)'],
+            ['495.0', 'Hours', 'var(--text)'],
+            ['E 42 200', 'Cost', 'var(--green)']]) +
+      tbl(['Foreman', 'On site', 'Hours', 'Cost'],
+        [['Foreman A', '24', '216.0', 'E 18 400'],
+         ['Foreman B', '19', '171.0', 'E 14 600'],
+         ['Foreman C', '12', '108.0', 'E 9 200']]) },
+
+    { n: '07', tag: 'Resources', title: 'Plant', body:
+      tbl(['Reg', 'Machine', 'Meter', 'Hours', 'Cost'],
+        [['EX-01', 'Excavator 20T', '1246 &rarr; 1254.4', '8.4', 'E 5 040'],
+         ['TLB-03', 'TLB', '882 &rarr; 888.1', '6.1', 'E 2 745'],
+         ['TIP-07', 'Tipper', '&mdash;', '9.0', 'E 3 150'],
+         ['DZ-02', 'Dozer', '&mdash;', '0.0', 'Breakdown']]) },
+
+    { n: '08', tag: 'Resources', title: 'Material', body:
+      tbl(['Material', 'Issued', 'Rate', 'Cost'],
+        [['G5 gravel', '142 m&sup3;', 'E 210', 'E 29 820'],
+         ['Cement 42.5N', '86 bags', 'E 128', 'E 11 008'],
+         ['Rebar Y12', '1.9 t', 'E 16 400', 'E 31 160']]) },
+
+    { n: '09', tag: 'Site', title: 'Daily Log', body:
+      tbl(['Cost type', 'Today', 'This month'],
+        [['Labour', 'E 42 200', 'E 684 000'],
+         ['Plant', 'E 10 935', 'E 249 400'],
+         ['Material', 'E 71 988', 'E 902 300'],
+         ['<b>Total</b>', '<b>E 125 123</b>', '<b>E 1 835 700</b>']]) },
+
+    { n: '10', tag: 'Attention', title: 'Alerts', body:
+      alerts([['var(--red)', 'DZ-02 broken down', '3 days &middot; no hours recorded since Tuesday'],
+              ['var(--orange)', '6 worker transfers unaccepted', 'Rosters do not change until accepted'],
+              ['var(--orange)', 'Fuel below re-order level', '410 L &middot; about 4 days of cover'],
+              ['var(--signal2)', 'IPC 07 approved, not paid', 'E 412 000 outstanding 34 days']]) }
+  ];
+
+  var body = document.getElementById('d-body');
+  var rail = document.getElementById('d-rail');
+  var dn = document.getElementById('d-n');
+  var de = document.getElementById('d-e');
+  var dt = document.getElementById('d-t');
+  var exp = document.getElementById('d-exp');
+  var full = document.getElementById('d-full');
+  var fn = document.getElementById('f-n');
+  var ft = document.getElementById('f-t');
+  var fe = document.getElementById('f-e');
+  var fbody = document.getElementById('f-body');
+
+  if (body && rail) {
+    rail.innerHTML = CARDS.map(function (c, i) {
+      return '<button class="dxpeg' + (i === 0 ? ' on' : '') + '" data-go="' + i +
+        '" title="' + c.tag + ' — ' + c.title + '">' +
+        '<span class="n">' + c.n + '</span><span class="t">' + c.title + '</span></button>';
+    }).join('');
+
+    var pegs = rail.querySelectorAll('.dxpeg');
+    var at = 0, timer = null, live = false, open = false;
+
+    function paint(i) {
+      var c = CARDS[i];
+      dn.textContent = c.n + ' / 10';
+      de.textContent = c.tag;
+      dt.textContent = c.title;
+      body.innerHTML = c.body;
+      for (var k = 0; k < pegs.length; k++) {
+        if (k === i) pegs[k].classList.add('on'); else pegs[k].classList.remove('on');
+      }
+    }
+    function show(i) {
+      at = i;
+      body.classList.add('fade');
+      setTimeout(function () { paint(i); body.classList.remove('fade'); }, 230);
+    }
+    function openFull() {
+      var c = CARDS[at];
+      fn.textContent = c.n;
+      ft.textContent = c.title;
+      fe.textContent = c.tag;
+      fbody.innerHTML = c.body;
+      exp.classList.add('hit');
+      full.classList.add('on');
+      open = true;
+    }
+    function closeFull() {
+      full.classList.remove('on');
+      exp.classList.remove('hit');
+      open = false;
+    }
+
+    paint(0);
+
+    var seq = [1, 2, 3, 'open', 'close', 4, 5, 6, 7, 8, 9, 0, 'open', 'close'];
+    var sp = 0;
+    function tick() {
+      var s = seq[sp % seq.length];
+      sp++;
+      if (s === 'open') { openFull(); return; }
+      if (s === 'close') { closeFull(); return; }
+      if (open) closeFull();
+      show(s);
+    }
+    function restart() {
+      if (!live || reduce) return;
+      clearInterval(timer);
+      timer = setInterval(tick, 2600);
+    }
+
+    // Read only. The demo plays itself; a visitor watches rather than drives it,
+    // so nobody can leave it parked on a screen that makes no sense out of context.
+    for (var p = 0; p < pegs.length; p++) { pegs[p].style.cursor = 'default'; }
+    dt.style.cursor = 'default';
+    exp.style.cursor = 'default';
+
+    var shell = document.querySelector('.dxshell');
+    if (!reduce && shell && 'IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        for (var i = 0; i < es.length; i++) {
+          if (es[i].isIntersecting && !live) {
+            live = true;
+            timer = setInterval(tick, 2600);
+          } else if (!es[i].isIntersecting && live) {
+            live = false;
+            clearInterval(timer);
+            closeFull();
+          }
+        }
+      }, { threshold: 0.35 }).observe(shell);
+    }
+  }
+
+
+
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      for (var i = 0; i < es.length; i++) {
+        if (es[i].isIntersecting) {
+          es[i].target.classList.add('in');
+          io.unobserve(es[i].target);
+        }
+      }
+    }, { threshold: 0.10 });
+    var rvs = document.querySelectorAll('.rv');
+    for (var r = 0; r < rvs.length; r++) io.observe(rvs[r]);
+  } else {
+    var all = document.querySelectorAll('.rv');
+    for (var a = 0; a < all.length; a++) all[a].classList.add('in');
+  }
+})();
+</script>
+</body>
+</html>
